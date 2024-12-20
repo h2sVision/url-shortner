@@ -1,5 +1,6 @@
 const Url = require('../models/url');
 const crypto = require('crypto');
+const QRCode = require('qrcode');
 
 const generateSlang = () => {
   let slang = crypto.randomBytes(4).toString('base64url'); 
@@ -32,10 +33,15 @@ exports.createShortUrl = async (req, res) => {
 
     // Create and save the short URL
     const shortUrl = `${req.protocol}://${req.get('host')}/${shortId}`;
+
+    // Generate QR code
+    const qrCode = await QRCode.toDataURL(shortUrl);
+
     const newUrl = new Url({
       originalUrl: url,
       shortUrl,
       expiresAt,
+      qrCode,
     });
 
     await newUrl.save();
@@ -68,30 +74,14 @@ exports.redirectUrl = async (req, res) => {
   }
 };
 
-exports.getAllUrls = async (req, res) => {
-    console.log("Received request for all URLs");
-    const { page = 1, limit = 10 } = req.query;
-  
+  // Fetch all URLs
+exports.getAllShortUrls = async (req, res) => {
     try {
-      const totalUrls = await Url.countDocuments();
-      console.log(`Total URLs in the database: ${totalUrls}`);
-  
-      const urls = await Url.find()
-        .skip((page - 1) * limit)
-        .limit(Number(limit));
-  
-      if (urls.length === 0) {
-        return res.status(404).json({ message: 'No URLs found' });
-      }
-  
-      res.status(200).json({
-        total: totalUrls,
-        page,
-        limit,
-        urls
-      });
+      const urls = await Url.find().select('originalUrl shortUrl createdAt updatedAt'); // Fetch specific fields
+      res.status(200).json(urls);
     } catch (err) {
-      console.error('Error in getAllUrls:', err.message);
+      console.error('Error in getAllShortUrls:', err.message);
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   };
+  

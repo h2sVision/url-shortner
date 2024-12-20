@@ -1,3 +1,17 @@
+// const mongoose = require('mongoose');
+
+// const connectDB = async () => {
+//   try {
+//     await mongoose.connect(process.env.MONGO_URI);
+//     console.log('MongoDB Connected...');
+//   } catch (err) {
+//     console.error(err.message);
+//     process.exit(1); 
+//   }
+// };
+
+// module.exports = connectDB;
+
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
@@ -5,7 +19,7 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected...');
   } catch (err) {
-    console.error(err.message);
+    console.error('Error connecting to MongoDB:', err.message);
     process.exit(1); 
   }
 };
